@@ -1,0 +1,153 @@
+package com.issues.issues_management_svc.persistence;
+
+import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.*;
+import com.issues.issues_management_svc.models.Issues;
+import com.issues.issues_management_svc.models.UpdateIssueStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+@Repository
+class IssuesDaoImpl implements IssuesDAO
+{
+    private final CollectionReference firestoreCollectionReference;
+
+    public IssuesDaoImpl(
+            @Qualifier("firestore_collection_ref")
+            CollectionReference firestoreCollectionReference) {
+        this.firestoreCollectionReference = firestoreCollectionReference;
+    }
+
+    @Override
+    public Issues getIssueByIssueId(String issueID)
+    {
+        try
+        {
+            return
+                    firestoreCollectionReference
+                            .document(issueID)
+                            .get()
+                            .get()
+                            .toObject(Issues.class);
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.getIssueByIssueId ] " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Todo : Need to implement pagination...
+    @Override
+    public List<Issues> getAllIssuesOfUser(String userID)
+    {
+        try
+        {
+            Query queryToGetAllIssuesOfAUser = firestoreCollectionReference.whereEqualTo("submittedBy",userID);
+            final List<QueryDocumentSnapshot> queryDocumentSnapshots
+                    = queryToGetAllIssuesOfAUser
+                    .get()
+                    .get()
+                    .getDocuments();
+
+            final List<Issues> resultSet = new ArrayList<>();
+            queryDocumentSnapshots
+                    .parallelStream()
+                    .forEach(
+                            queryDocumentSnapshot -> resultSet.add(queryDocumentSnapshot.toObject(Issues.class))
+                    );
+            System.out.println(
+                    ">>> [ IssuesDaoImpl.getAllIssuesOfUser ] All Issues of user " +
+                            userID +
+                            " is fetched"
+            );
+            return resultSet;
+        }
+        catch (Exception e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.getAllIssuesOfUser ] " + e.getMessage());
+            throw  new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public Issues createNewIssue(Issues newIssue) {
+        String newDocID = firestoreCollectionReference.document().getId();
+        newIssue.set_id(newDocID);
+        newIssue.setStatus("Delivered");
+        newIssue.setTimeStamp();
+        try {
+            firestoreCollectionReference
+                    .document(newDocID)
+                    .set(newIssue)
+                    .get();
+            System.out.println(
+                    ">>> [ IssuesDaoImpl.createNewIssue ] New Issue Created with ID " +
+                            newIssue.get_id()
+            );
+            return newIssue;
+        } catch (InterruptedException | ExecutionException e) {
+            System.out.println(">>> [ IssuesDaoImpl.createNewIssue ] " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Issues updateIssueStatus(String issueID, UpdateIssueStatus newStatus)
+    {
+        try
+        {
+            final DocumentReference documentReference = firestoreCollectionReference.document(issueID);
+            final Timestamp timestampBeforeUpdate = documentReference.get().get().getUpdateTime();
+            if(timestampBeforeUpdate==null)
+            {
+                System.out.println(">>> [ IssuesDaoImpl.updateIssueStatus ] Doc with id " + issueID + " Not Present...");
+                return null; // means doc is not present...
+            }
+            documentReference.update("status",newStatus.getNewStatus()).get();
+            Issues issueAfterUpdatingStatus = getIssueByIssueId(issueID);
+            System.out.println(
+                    ">>> [ IssuesDaoImpl.updateIssueStatus ] Issue with ID " +
+                            issueAfterUpdatingStatus.get_id() +
+                            " is updated with New Status."
+            );
+            return issueAfterUpdatingStatus;
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.updateIssueStatus ] " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean deleteIssue(String issueID)
+    {
+        try
+        {
+            final DocumentReference documentReference = firestoreCollectionReference.document(issueID);
+            final Timestamp timestampBeforeDelete = documentReference.get().get().getUpdateTime();
+            if(timestampBeforeDelete==null)
+            {
+                System.out.println("Already Deleted...");
+                return false; // means the doc does not exist.
+            }
+            documentReference.delete().get();
+            System.out.println(
+                        ">>> [ IssuesDaoImpl.deleteIssue ] Issue with ID " +
+                                issueID +
+                                " is Deleted."
+                );
+            return true; // means the doc was present and is successfully deleted.
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.deleteIssue ] " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+}
