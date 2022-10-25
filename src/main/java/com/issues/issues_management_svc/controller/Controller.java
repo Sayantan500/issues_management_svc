@@ -1,6 +1,7 @@
 package com.issues.issues_management_svc.controller;
 
 import com.issues.issues_management_svc.models.Issues;
+import com.issues.issues_management_svc.models.UpdateIssueSolutionId;
 import com.issues.issues_management_svc.models.UpdateIssueStatus;
 import com.issues.issues_management_svc.persistence.IssuesDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,21 @@ public class Controller
     )
     {
         Issues issueWithUpdatedStatus = issuesDao.updateIssueStatus(issueID,updatedStatusObject);
+        final HttpStatus httpStatus =
+                issueWithUpdatedStatus != null ?
+                        HttpStatus.OK :
+                        HttpStatus.NOT_FOUND;
+
+        return new ResponseEntity<>(issueWithUpdatedStatus,httpStatus);
+    }
+
+    @PatchMapping("/issues/{id}/solution-id")
+    public ResponseEntity<Issues> updateSolutionIdOfIssue(
+            @PathVariable(name = "id") String issueID,
+            @RequestBody UpdateIssueSolutionId updateIssueSolutionIdObject
+    )
+    {
+        Issues issueWithUpdatedStatus = issuesDao.updateSolutionIdOfIssue(issueID,updateIssueSolutionIdObject);
         final HttpStatus httpStatus =
                 issueWithUpdatedStatus != null ?
                         HttpStatus.OK :

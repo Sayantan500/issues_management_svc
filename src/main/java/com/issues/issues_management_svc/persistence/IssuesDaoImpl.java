@@ -3,6 +3,7 @@ package com.issues.issues_management_svc.persistence;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.issues.issues_management_svc.models.Issues;
+import com.issues.issues_management_svc.models.UpdateIssueSolutionId;
 import com.issues.issues_management_svc.models.UpdateIssueStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -151,6 +152,30 @@ class IssuesDaoImpl implements IssuesDAO
         catch (InterruptedException | ExecutionException e)
         {
             System.out.println(">>> [ IssuesDaoImpl.updateIssueStatus ] " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Issues updateSolutionIdOfIssue(String issueID, UpdateIssueSolutionId newSolution)
+    {
+        try
+        {
+            final DocumentReference documentReference = verifyIssueID(issueID);
+            if(documentReference==null)
+                return null; // means doc is not present...
+            documentReference.update("solutionId",newSolution.getNewSolutionId()).get();
+            Issues issueAfterUpdatingStatus = getIssueByIssueId(issueID);
+            System.out.println(
+                    ">>> [ IssuesDaoImpl.updateSolutionIdOfIssue ] Issue with ID " +
+                            issueAfterUpdatingStatus.get_id() +
+                            " is updated with New Solution ID."
+            );
+            return issueAfterUpdatingStatus;
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.updateSolutionIdOfIssue ] " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
