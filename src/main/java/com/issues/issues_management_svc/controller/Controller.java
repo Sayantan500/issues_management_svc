@@ -25,10 +25,15 @@ public class Controller
         return new ResponseEntity<>(issue,httpStatus);
     }
 
-    //Todo : Need to take some parameter for pagination...
-    @GetMapping("/users/{uid}/issues")
-    public ResponseEntity<List<Issues>> getAllIssuesByUserId(@PathVariable(name = "uid") String userID){
-        final List<Issues> issuesList = issuesDao.getAllIssuesOfUser(userID);
+    @GetMapping("/issues")
+    public ResponseEntity<List<Issues>> getAllIssuesByUserIdAndLastIssueID(
+            @RequestParam(name = "uid") String userID,
+            @RequestParam(name = "last-issue-id",required = false) String lastIssueID
+    )
+    {
+        System.out.println("lastIssueID = " + lastIssueID);
+        lastIssueID = (lastIssueID==null || lastIssueID.compareTo("")==0) ? null : lastIssueID;
+        final List<Issues> issuesList = issuesDao.getAllIssuesOfUser(userID, lastIssueID);
         final ResponseEntity<List<Issues>> response;
         response = new ResponseEntity<>(issuesList,HttpStatus.OK);
 

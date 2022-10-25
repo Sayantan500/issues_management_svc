@@ -15,11 +15,17 @@ import java.util.concurrent.ExecutionException;
 class IssuesDaoImpl implements IssuesDAO
 {
     private final CollectionReference firestoreCollectionReference;
+    private final int paginationLimit;
 
     public IssuesDaoImpl(
             @Qualifier("firestore_collection_ref")
-            CollectionReference firestoreCollectionReference) {
+            CollectionReference firestoreCollectionReference,
+            @Qualifier("pagination_limit")
+            int paginationLimit
+    )
+    {
         this.firestoreCollectionReference = firestoreCollectionReference;
+        this.paginationLimit = paginationLimit;
     }
 
     @Override
@@ -41,13 +47,39 @@ class IssuesDaoImpl implements IssuesDAO
         }
     }
 
-    //Todo : Need to implement pagination...
     @Override
-    public List<Issues> getAllIssuesOfUser(String userID)
+    public List<Issues> getAllIssuesOfUser(String userID, String lastIssueID)
     {
         try
         {
-            Query queryToGetAllIssuesOfAUser = firestoreCollectionReference.whereEqualTo("submittedBy",userID);
+            DocumentSnapshot documentSnapshotOfLastIssue = null;
+            if (lastIssueID!=null)
+            {
+                documentSnapshotOfLastIssue =
+                        firestoreCollectionReference
+                                .document(lastIssueID)
+                                .get()
+                                .get();
+                if(! documentSnapshotOfLastIssue.exists())
+                    lastIssueID = null;
+            }
+
+
+            Query queryToGetAllIssuesOfAUser =
+                    firestoreCollectionReference
+                            .whereEqualTo("submittedBy",userID)
+                            .orderBy("createdAt", Query.Direction.DESCENDING);
+
+            if(lastIssueID==null)
+                queryToGetAllIssuesOfAUser = queryToGetAllIssuesOfAUser.limit(paginationLimit);
+            else
+            {
+                queryToGetAllIssuesOfAUser =
+                        queryToGetAllIssuesOfAUser
+                                .startAfter(documentSnapshotOfLastIssue)
+                                .limit(paginationLimit);
+            }
+
             final List<QueryDocumentSnapshot> queryDocumentSnapshots
                     = queryToGetAllIssuesOfAUser
                     .get()
@@ -56,7 +88,6 @@ class IssuesDaoImpl implements IssuesDAO
 
             final List<Issues> resultSet = new ArrayList<>();
             queryDocumentSnapshots
-                    .parallelStream()
                     .forEach(
                             queryDocumentSnapshot -> resultSet.add(queryDocumentSnapshot.toObject(Issues.class))
                     );

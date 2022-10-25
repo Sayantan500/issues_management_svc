@@ -10,7 +10,7 @@ import java.util.List;
 public interface IssuesDAO
 {
     Issues getIssueByIssueId(String issueID);
-    List<Issues> getAllIssuesOfUser(String userID);
+    List<Issues> getAllIssuesOfUser(String userID, String lastIssueID);
     Issues createNewIssue(Issues newIssue);
     Issues updateIssueStatus(String issueID, UpdateIssueStatus newStatus);
     boolean deleteIssue(String issueID);
