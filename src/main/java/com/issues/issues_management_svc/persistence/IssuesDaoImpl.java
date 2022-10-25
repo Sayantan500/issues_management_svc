@@ -133,13 +133,9 @@ class IssuesDaoImpl implements IssuesDAO
     {
         try
         {
-            final DocumentReference documentReference = firestoreCollectionReference.document(issueID);
-            final Timestamp timestampBeforeUpdate = documentReference.get().get().getUpdateTime();
-            if(timestampBeforeUpdate==null)
-            {
-                System.out.println(">>> [ IssuesDaoImpl.updateIssueStatus ] Doc with id " + issueID + " Not Present...");
+            final DocumentReference documentReference = verifyIssueID(issueID);
+            if(documentReference==null)
                 return null; // means doc is not present...
-            }
             documentReference.update("status",newStatus.getNewStatus()).get();
             Issues issueAfterUpdatingStatus = getIssueByIssueId(issueID);
             System.out.println(
@@ -185,11 +181,14 @@ class IssuesDaoImpl implements IssuesDAO
     {
         try
         {
-            final DocumentReference documentReference = firestoreCollectionReference.document(issueID);
-            final Timestamp timestampBeforeDelete = documentReference.get().get().getUpdateTime();
-            if(timestampBeforeDelete==null)
+            final DocumentReference documentReference = verifyIssueID(issueID);
+            if(documentReference==null)
             {
-                System.out.println("Already Deleted...");
+                System.out.println(
+                        ">>> [ IssuesDaoImpl.deleteIssue ] Issue with ID " +
+                                issueID +
+                                "is Already Deleted..."
+                );
                 return false; // means the doc does not exist.
             }
             documentReference.delete().get();
