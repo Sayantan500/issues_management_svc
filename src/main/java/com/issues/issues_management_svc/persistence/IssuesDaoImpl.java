@@ -206,4 +206,20 @@ class IssuesDaoImpl implements IssuesDAO
             throw new RuntimeException(e);
         }
     }
+
+    private DocumentReference verifyIssueID(String issueID)
+    {
+        final DocumentReference documentReference = firestoreCollectionReference.document(issueID);
+        try {
+            if(documentReference.get().get().exists())
+            {
+                System.out.println(">>> [ IssuesDaoImpl.verifyIssueID ] Doc with id " + issueID + " is present");
+                return documentReference;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            System.out.println(">>> [ IssuesDaoImpl.verifyIssueID ] " + e.getMessage());
+        }
+        System.out.println(">>> [ IssuesDaoImpl.verifyIssueID ] Doc with id " + issueID + " Not Present...");
+        return null;
+    }
 }
