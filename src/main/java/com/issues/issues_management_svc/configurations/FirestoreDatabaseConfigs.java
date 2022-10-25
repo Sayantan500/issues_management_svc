@@ -14,6 +14,9 @@ public class FirestoreDatabaseConfigs
     @Value("${issues.collection_name}")
     private String COLLECTION_NAME_ISSUES;
 
+    @Value("${issues.pagination_limit}")
+    private String paginationLimit;
+
     @Bean(name = "issues_collection_name")
     public String getIssuesCollectionName(){
         return COLLECTION_NAME_ISSUES;
@@ -24,5 +27,10 @@ public class FirestoreDatabaseConfigs
         return FirestoreClient
                 .getFirestore()
                 .collection(getIssuesCollectionName());
+    }
+
+    @Bean(name = "pagination_limit")
+    public int getPaginationLimit(){
+        return Integer.parseInt(paginationLimit);
     }
 }
