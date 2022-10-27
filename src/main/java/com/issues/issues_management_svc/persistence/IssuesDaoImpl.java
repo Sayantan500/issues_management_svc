@@ -34,12 +34,11 @@ class IssuesDaoImpl implements IssuesDAO
     {
         try
         {
-            return
-                    firestoreCollectionReference
-                            .document(issueID)
-                            .get()
-                            .get()
-                            .toObject(Issues.class);
+            return firestoreCollectionReference
+                    .document(issueID)
+                    .get()
+                    .get()
+                    .toObject(Issues.class);
         }
         catch (InterruptedException | ExecutionException e)
         {
