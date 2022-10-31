@@ -4,8 +4,6 @@ import com.issues.issues_management_svc.models.Issues;
 import com.issues.issues_management_svc.models.UpdateIssueSolutionId;
 import com.issues.issues_management_svc.models.UpdateIssueStatus;
 import com.issues.issues_management_svc.persistence.IssuesDAO;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +12,12 @@ import java.util.List;
 
 @RestController
 @CrossOrigin("*")
-@AllArgsConstructor
 public class Controller
 {
     private final IssuesDAO issuesDao;
+    public Controller(IssuesDAO issuesDao) {
+        this.issuesDao = issuesDao;
+    }
 
     @GetMapping("/issues/{id}")
     public ResponseEntity<Issues> getIssuesById(@PathVariable(name = "id") String issuesID){

@@ -2,16 +2,10 @@ package com.issues.issues_management_svc.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.cloud.Timestamp;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@NoArgsConstructor
 public class Issues
 {
-    @Setter @JsonProperty("_id")    private String _id;
+    @JsonProperty("_id")            private String _id;
 
     @JsonProperty("title")          private String issueTitle;
     @JsonProperty("description")    private String issueDescription;
@@ -20,17 +14,82 @@ public class Issues
 
     @JsonProperty("solution_id")    private String solutionId;
 
-    @Setter @JsonProperty("status") private String status;
+    @JsonProperty("status")         private String status;
     @JsonProperty("created_at")     private Timestamp createdAt;
 
-    public Issues(String issueTitle, String issueDescription, String submittedBy, String submittedToDepartment) {
+    public Issues() {}
+
+    /**
+     * Setters
+     * */
+    public void set_id(String _id) {
+        this._id = _id;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setIssueTitle(String issueTitle) {
         this.issueTitle = issueTitle;
+    }
+
+    public void setIssueDescription(String issueDescription) {
         this.issueDescription = issueDescription;
+    }
+
+    public void setSubmittedBy(String submittedBy) {
         this.submittedBy = submittedBy;
+    }
+
+    public void setSubmittedToDepartment(String submittedToDepartment) {
         this.submittedToDepartment = submittedToDepartment;
+    }
+
+    public void setSolutionId(String solutionId) {
+        this.solutionId = solutionId;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     public void setTimeStamp() {
         this.createdAt = Timestamp.now();
+    }
+
+    /**
+     * Getters
+     * */
+    public String get_id() {
+        return _id;
+    }
+
+    public String getIssueTitle() {
+        return issueTitle;
+    }
+
+    public String getIssueDescription() {
+        return issueDescription;
+    }
+
+    public String getSubmittedBy() {
+        return submittedBy;
+    }
+
+    public String getSubmittedToDepartment() {
+        return submittedToDepartment;
+    }
+
+    public String getSolutionId() {
+        return solutionId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 }
