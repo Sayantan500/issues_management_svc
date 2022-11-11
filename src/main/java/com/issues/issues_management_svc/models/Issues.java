@@ -3,6 +3,8 @@ package com.issues.issues_management_svc.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.cloud.Timestamp;
 
+import java.util.Date;
+
 public class Issues
 {
     @JsonProperty("_id")            private String _id;
@@ -15,7 +17,7 @@ public class Issues
     @JsonProperty("solution_id")    private String solutionId;
 
     @JsonProperty("status")         private String status;
-    @JsonProperty("created_at")     private Timestamp createdAt;
+    @JsonProperty("created_at")     private long createdAt;
 
     public Issues() {}
 
@@ -50,12 +52,12 @@ public class Issues
         this.solutionId = solutionId;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
 
     public void setTimeStamp() {
-        this.createdAt = Timestamp.now();
+        this.createdAt = new Date().getTime();
     }
 
     /**
@@ -89,7 +91,7 @@ public class Issues
         return status;
     }
 
-    public Timestamp getCreatedAt() {
+    public long getCreatedAt() {
         return createdAt;
     }
 }

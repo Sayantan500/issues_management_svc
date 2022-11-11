@@ -1,6 +1,5 @@
 package com.issues.issues_management_svc.persistence;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.issues.issues_management_svc.models.Issues;
 import com.issues.issues_management_svc.models.UpdateIssueSolutionId;
