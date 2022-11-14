@@ -1,7 +1,6 @@
 package com.issues.issues_management_svc.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.cloud.Timestamp;
 
 import java.util.Date;
 
