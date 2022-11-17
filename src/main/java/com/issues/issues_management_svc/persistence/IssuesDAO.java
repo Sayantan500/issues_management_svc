@@ -11,6 +11,7 @@ import java.util.List;
 public interface IssuesDAO
 {
     Issues getIssueByIssueId(String issueID);
+    List<Issues> getIssuesByDepartment(String departmentName, String lastIssueID);
     List<Issues> getAllIssuesOfUser(String userID, String lastIssueID);
     Issues createNewIssue(Issues newIssue);
     Issues updateIssueStatus(String issueID, UpdateIssueStatus newStatus);

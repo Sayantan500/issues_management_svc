@@ -47,6 +47,66 @@ class IssuesDaoImpl implements IssuesDAO
     }
 
     @Override
+    public List<Issues> getIssuesByDepartment(String departmentName, String lastIssueID) {
+        if(departmentName==null || departmentName.length()==0)
+            return null;
+
+        try
+        {
+            DocumentSnapshot documentSnapshotOfLastIssue = null;
+            if (lastIssueID!=null)
+            {
+                documentSnapshotOfLastIssue =
+                        firestoreCollectionReference
+                                .document(lastIssueID)
+                                .get()
+                                .get();
+                if(! documentSnapshotOfLastIssue.exists())
+                    lastIssueID = null;
+            }
+
+
+            Query queryToGetAllIssuesOfADepartment =
+                    firestoreCollectionReference
+                            .whereEqualTo("submittedToDepartment",departmentName)
+                            .orderBy("createdAt", Query.Direction.ASCENDING);
+
+            if(lastIssueID==null)
+                queryToGetAllIssuesOfADepartment = queryToGetAllIssuesOfADepartment.limit(paginationLimit);
+            else
+            {
+                queryToGetAllIssuesOfADepartment =
+                        queryToGetAllIssuesOfADepartment
+                                .startAfter(documentSnapshotOfLastIssue)
+                                .limit(paginationLimit);
+            }
+
+            final List<QueryDocumentSnapshot> queryDocumentSnapshots
+                    = queryToGetAllIssuesOfADepartment
+                    .get()
+                    .get()
+                    .getDocuments();
+
+            final List<Issues> resultSet = new ArrayList<>();
+            queryDocumentSnapshots
+                    .forEach(
+                            queryDocumentSnapshot -> resultSet.add(queryDocumentSnapshot.toObject(Issues.class))
+                    );
+            System.out.println(
+                    ">>> [ IssuesDaoImpl.getIssuesByDepartment ] All Issues of dept. " +
+                            departmentName +
+                            " is fetched."
+            );
+            return resultSet;
+        }
+        catch (Exception e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.getIssuesByDepartment ] " + e.getMessage());
+            throw  new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
     public List<Issues> getAllIssuesOfUser(String userID, String lastIssueID)
     {
         try

@@ -42,6 +42,21 @@ public class Controller
         return response;
     }
 
+    @GetMapping("/issues/department")
+    public ResponseEntity<List<Issues>> getAllIssuesByDepartmentAndLastIssueID(
+            @RequestParam(name = "dept") String departmentName,
+            @RequestParam(name = "last-issue-id",required = false) String lastIssueID
+    )
+    {
+        System.out.println("lastIssueID = " + lastIssueID);
+        lastIssueID = (lastIssueID==null || lastIssueID.compareTo("")==0) ? null : lastIssueID;
+        final List<Issues> issuesList = issuesDao.getIssuesByDepartment(departmentName, lastIssueID);
+        final ResponseEntity<List<Issues>> response;
+        response = new ResponseEntity<>(issuesList,HttpStatus.OK);
+
+        return response;
+    }
+
     @PostMapping("/issues/new")
     public ResponseEntity<Issues> createNewIssue(@RequestBody Issues newIssue){
         final Issues issueAfterCreatingInDB = issuesDao.createNewIssue(newIssue);
