@@ -53,25 +53,14 @@ class IssuesDaoImpl implements IssuesDAO
 
         try
         {
-            DocumentSnapshot documentSnapshotOfLastIssue = null;
-            if (lastIssueID!=null)
-            {
-                documentSnapshotOfLastIssue =
-                        firestoreCollectionReference
-                                .document(lastIssueID)
-                                .get()
-                                .get();
-                if(! documentSnapshotOfLastIssue.exists())
-                    lastIssueID = null;
-            }
-
+            DocumentSnapshot documentSnapshotOfLastIssue = getDocSnapOfLastIssue(lastIssueID);
 
             Query queryToGetAllIssuesOfADepartment =
                     firestoreCollectionReference
                             .whereEqualTo("submittedToDepartment",departmentName)
                             .orderBy("createdAt", Query.Direction.ASCENDING);
 
-            if(lastIssueID==null)
+            if(documentSnapshotOfLastIssue==null)
                 queryToGetAllIssuesOfADepartment = queryToGetAllIssuesOfADepartment.limit(paginationLimit);
             else
             {
@@ -81,17 +70,7 @@ class IssuesDaoImpl implements IssuesDAO
                                 .limit(paginationLimit);
             }
 
-            final List<QueryDocumentSnapshot> queryDocumentSnapshots
-                    = queryToGetAllIssuesOfADepartment
-                    .get()
-                    .get()
-                    .getDocuments();
-
-            final List<Issues> resultSet = new ArrayList<>();
-            queryDocumentSnapshots
-                    .forEach(
-                            queryDocumentSnapshot -> resultSet.add(queryDocumentSnapshot.toObject(Issues.class))
-                    );
+            final List<Issues> resultSet = createIssuesList(queryToGetAllIssuesOfADepartment);
             System.out.println(
                     ">>> [ IssuesDaoImpl.getIssuesByDepartment ] All Issues of dept. " +
                             departmentName +
@@ -111,25 +90,13 @@ class IssuesDaoImpl implements IssuesDAO
     {
         try
         {
-            DocumentSnapshot documentSnapshotOfLastIssue = null;
-            if (lastIssueID!=null)
-            {
-                documentSnapshotOfLastIssue =
-                        firestoreCollectionReference
-                                .document(lastIssueID)
-                                .get()
-                                .get();
-                if(! documentSnapshotOfLastIssue.exists())
-                    lastIssueID = null;
-            }
-
-
+            DocumentSnapshot documentSnapshotOfLastIssue = getDocSnapOfLastIssue(lastIssueID);
             Query queryToGetAllIssuesOfAUser =
                     firestoreCollectionReference
                             .whereEqualTo("submittedBy",userID)
                             .orderBy("createdAt", Query.Direction.DESCENDING);
 
-            if(lastIssueID==null)
+            if(documentSnapshotOfLastIssue==null) //implies lastIssueID is null
                 queryToGetAllIssuesOfAUser = queryToGetAllIssuesOfAUser.limit(paginationLimit);
             else
             {
@@ -139,17 +106,7 @@ class IssuesDaoImpl implements IssuesDAO
                                 .limit(paginationLimit);
             }
 
-            final List<QueryDocumentSnapshot> queryDocumentSnapshots
-                    = queryToGetAllIssuesOfAUser
-                    .get()
-                    .get()
-                    .getDocuments();
-
-            final List<Issues> resultSet = new ArrayList<>();
-            queryDocumentSnapshots
-                    .forEach(
-                            queryDocumentSnapshot -> resultSet.add(queryDocumentSnapshot.toObject(Issues.class))
-                    );
+            final List<Issues> resultSet = createIssuesList(queryToGetAllIssuesOfAUser);
             System.out.println(
                     ">>> [ IssuesDaoImpl.getAllIssuesOfUser ] All Issues of user " +
                             userID +
@@ -164,6 +121,51 @@ class IssuesDaoImpl implements IssuesDAO
         }
     }
 
+    private DocumentSnapshot getDocSnapOfLastIssue(String lastIssueID)
+    {
+        if (lastIssueID!=null)
+        {
+            try
+            {
+                DocumentSnapshot documentSnapshot =
+                        firestoreCollectionReference
+                                .document(lastIssueID)
+                                .get()
+                                .get();
+                return documentSnapshot.exists() ? documentSnapshot : null;
+            }
+            catch (InterruptedException | ExecutionException e)
+            {
+                System.out.println(">>> [ IssuesDaoImpl.getDocSnapOfLastIssue ] " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+    private List<Issues> createIssuesList(Query query)
+    {
+        final List<QueryDocumentSnapshot> queryDocumentSnapshots;
+        try
+        {
+            queryDocumentSnapshots = query
+            .get()
+            .get()
+            .getDocuments();
+        }
+        catch (InterruptedException | ExecutionException e)
+        {
+            System.out.println(">>> [ IssuesDaoImpl.createIssuesList ] " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        final List<Issues> resultSet = new ArrayList<>();
+        queryDocumentSnapshots
+                .forEach(
+                        queryDocumentSnapshot -> resultSet.add(queryDocumentSnapshot.toObject(Issues.class))
+                );
+        return resultSet;
+    }
     @Override
     public Issues createNewIssue(Issues newIssue) {
         String newDocID = firestoreCollectionReference.document().getId();
