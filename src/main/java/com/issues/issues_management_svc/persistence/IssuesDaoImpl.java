@@ -84,7 +84,6 @@ class IssuesDaoImpl implements IssuesDAO
             throw  new RuntimeException(e.getMessage());
         }
     }
-
     @Override
     public List<Issues> getAllIssuesOfUser(String userID, String lastIssueID)
     {
