@@ -34,19 +34,19 @@ public class Controller
             @RequestParam(name = "last-issue-id",required = false) String lastIssueID
     )
     {
-        System.out.println("lastIssueID = " + lastIssueID);
         lastIssueID = (lastIssueID==null || lastIssueID.compareTo("")==0) ? null : lastIssueID;
         final List<Issues> issuesList ;
-        final boolean isDeptNamePresent = deptName.compareTo("")==0;
-        final boolean isUserIdPresent = userID.compareTo("")==0;
+        final boolean isDeptNamePresent = deptName.compareTo("")!=0;
+        final boolean isUserIdPresent = userID.compareTo("")!=0;
 
         if((!isDeptNamePresent && !isUserIdPresent) ||
                 (isDeptNamePresent && isUserIdPresent)) // both the uid & deptName params are empty or both are present
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        else if(deptName.compareTo("")==0)
-            issuesList = issuesDao.getAllIssuesOfUser(userID, lastIssueID);
-        else
-            issuesList = issuesDao.getIssuesByDepartment(deptName, lastIssueID);
+
+        issuesList =
+                isUserIdPresent ?
+                        issuesDao.getAllIssuesOfUser(userID, lastIssueID) :
+                        issuesDao.getIssuesByDepartment(deptName, lastIssueID);
 
         return new ResponseEntity<>(issuesList,HttpStatus.OK);
     }
